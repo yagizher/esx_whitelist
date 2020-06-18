@@ -24,3 +24,24 @@ ESX.RegisterCommand('wladd', 'admin', function(xPlayer, args, showError)
 end, true, {help = _U('help_whitelist_add'), validate = true, arguments = {
 	{name = 'license', help = 'the player license', type = 'string'}
 }})
+
+ESX.RegisterCommand('wlremove', 'admin', function(xPlayer, args, showError)
+	args.license = args.license:lower()
+
+	if string.len(args.license) == 40 then
+		if WhiteList[args.license] then
+			showError('The player is already whitelisted on this server!')
+		else
+			MySQL.Async.execute('DELETE FROM whitelist (identifier) VALUES (@identifier)', {
+				['@identifier'] = args.license
+			}, function(rowsChanged)
+				WhiteList[args.license] = false
+				showError('Players whitelist have been removed.')
+			end)
+		end
+	else
+		showError('Invalid license ID length!')
+	end
+end, true, {help = _U('help_whitelist_add'), validate = true, arguments = {
+	{name = 'license', help = 'the player license', type = 'string'}
+}})
